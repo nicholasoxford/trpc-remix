@@ -11,11 +11,11 @@ export type WithTRPCConfig<TRouter extends AnyRouter> = CreateTRPCClientOptions<
 };
 
 interface WithTRPCOptions<TRouter extends AnyRouter> {
-	config: (info: Record<never, never>) => WithTRPCConfig<TRouter>;
+	config: (info: Record<any, any>) => WithTRPCConfig<TRouter>;
 }
 
 export interface WithTRPCNoSSROptions<TRouter extends AnyRouter> extends WithTRPCOptions<TRouter> {
-	ssr?: false;
+	ssr?: boolean;
 }
 
 function withTRPC<TRouter extends AnyRouter>(

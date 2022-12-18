@@ -1,6 +1,6 @@
 {
 	"name": "@noxford1/trpc-remix",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "tRPC Remix lib",
 	"author": "ggrandi",
 	"license": "MIT",
