@@ -1,5 +1,5 @@
 {
-	"name": "trpc-remix",
+	"name": "@noxford1/trpc-remix",
 	"version": "0.0.1",
 	"description": "tRPC Remix lib",
 	"author": "ggrandi",
