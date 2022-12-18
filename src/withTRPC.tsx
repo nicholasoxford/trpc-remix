@@ -1,8 +1,8 @@
 import type { CreateTRPCClientOptions } from "@trpc/client/src/internals/TRPCClient";
-import { createReactQueryHooks } from "@trpc/react";
+import { createTRPCReact } from "@trpc/react-query";
 import type { AnyRouter } from "@trpc/server";
 import React, { useState } from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 type QueryClientConfig = ConstructorParameters<typeof QueryClient>[0];
 
@@ -22,7 +22,7 @@ function withTRPC<TRouter extends AnyRouter>(
 	opts: WithTRPCNoSSROptions<TRouter>
 ): (Component: React.FC) => React.ReactElement {
 	const { config: getClientConfig } = opts;
-	const trpc = createReactQueryHooks<TRouter>();
+	const trpc = createTRPCReact<TRouter>();
 
 	return (Component: React.FC) => {
 		const WithTRPC = (props: Record<never, never>) => {
