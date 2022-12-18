@@ -1,4 +1,4 @@
-# `trpc-remix`
+# `@noxford1/trpc-remix`
 
 > Connect a [tRPC](https://trpc.io) router to remix.
 
@@ -6,112 +6,85 @@
 
 ```bash
 # npm
-npm install trpc-remix @trpc/react react-query
+npm install @noxford1/trpc-remix @trpc/react-query @tanstack/react-query
 
 # Yarn
-yarn add trpc-remix @trpc/react react-query
+yarn add @noxford1/trpc-remix @trpc/react-query @tanstack/react-query
 
 # pnpm
-pnpm add trpc-remix @trpc/react react-query
+pnpm add @noxford1/trpc-remix @trpc/react-query @tanstack/react-query
 ```
 
-## Basic Example
+## Goal
 
-Setup the API route in `app/routes/api/$trpc.ts`
+Rewrite the great [work by ggrandi](https://github.com/ggrandi/trpc-remix) to use most up to date react query and trpc packages.
+
+Enable ssr ?
+
+### The old code
 
 ```ts
-import { remixHTTPRequestHandler } from 'trpc-remix/adapter';
-import { createContext } from '~/server/context';
-import { appRouter } from '~/server/routers/_app';
+import { createReactQueryHooks, createReactQueryHooksProxy } from "@trpc/react";
+import type { AnyRouter } from "@trpc/server";
+import { type WithTRPCNoSSROptions, withTRPC } from "./withTRPC";
 
-export const { loader, action } = remixHTTPRequestHandler({
-  createContext,
-  router: appRouter,
-});
-```
+export type Hooks<TRouter extends AnyRouter> = ReturnType<typeof createReactQueryHooks<TRouter>>;
 
-Setup tRPC in `app/utils/trpc.ts`.
+export function createTRPCRemix<TRouter extends AnyRouter>(
+	opts: WithTRPCNoSSROptions<TRouter>
+): {
+	proxy: ReturnType<typeof createReactQueryHooksProxy<TRouter>>;
+	useContext: Hooks<TRouter>["useContext"];
+	useInfiniteQuery: Hooks<TRouter>["useInfiniteQuery"];
+	useMutation: Hooks<TRouter>["useMutation"];
+	useQuery: Hooks<TRouter>["useQuery"];
+	useSubscription: Hooks<TRouter>["useSubscription"];
+	withTRPC: ReturnType<typeof withTRPC<TRouter>>;
+	queries: Hooks<TRouter>["queries"];
+} {
+	const hooks = createReactQueryHooks<TRouter>();
+	const proxy = createReactQueryHooksProxy<TRouter>(hooks);
 
-```ts
-import { createTRPCRemix } from 'trpc-remix';
-import type { AppRouter } from '<server file location>';
+	const _withTRPC = withTRPC<TRouter>(opts);
 
-export const trpc = createTRPCRemix<AppRouter>({
-  config() {
-    return {
-      // ...
-    };
-  },
-});
-```
-
-Hook up tRPC inside `app/root.tsx`.
-
-```ts
-import { trpc } from '~/utils/trpc';
-
-// ...
-
-const App = () => {
-  return (
-    // ...
-  );
-};
-
-export default trpc.withTRPC(App);
-```
-
-Add createTRPCLoader to your AppRouter file.
-
-```ts
-import { createTRPCLoader } from 'trpc-remix';
-import { t } from '../trpc';
-
-export const appRouter = t.router({
-  // ...
-});
-
-export type AppRouter = typeof appRouter;
-
-export const trpcLoader = createTRPCLoader(appRouter);
-```
-
-Now you can query your API in any component.
-
-```tsx
-import type { LoaderArgs } from '@remix-run/node';
-import { json } from '@remix-run/node';
-import { trpcLoader } from '~/server/routers/_app';
-import { trpc } from '~/utils/trpc';
-
-const loader = async (args: LoaderArgs) => {
-  const trpc = trpcLoader(args);
-
-  return json({
-    greeting: await trpc.greeting(),
-  });
-};
-
-export function Hello() {
-  const { data, error, status } = trpc.proxy.greeting.useQuery({
-    name: 'tRPC',
-  });
-
-  const loaderData = useLoaderData<typeof loader>();
-
-  if (error) {
-    return <p>{error.message}</p>;
-  }
-
-  if (status !== 'success') {
-    return <p>Loading...</p>;
-  }
-
-  return (
-    <>
-      <div>{data && <p>{data.greeting}</p>}</div>
-      <pre>LoaderData: {loaderData}</pre>
-    </>
-  );
+	return {
+		proxy,
+		useContext: hooks.useContext,
+		useInfiniteQuery: hooks.useInfiniteQuery,
+		useMutation: hooks.useMutation,
+		useQuery: hooks.useQuery,
+		useSubscription: hooks.useSubscription,
+		withTRPC: _withTRPC,
+		queries: hooks.queries,
+	};
 }
+```
+
+What I think might be the right approach
+
+```ts
+import { CreateTRPCReact, createTRPCReact } from "@trpc/react-query";
+import type { AnyRouter } from "@trpc/server";
+import { FC, JSXElementConstructor, ReactElement } from "react";
+import { type WithTRPCNoSSROptions, withTRPC } from "./withTRPC";
+
+export type Hooks<TRouter extends AnyRouter> = ReturnType<typeof createTRPCReact<TRouter>>;
+
+export function createTRPCRemix<TRouter extends AnyRouter>(
+	opts: WithTRPCNoSSROptions<TRouter>
+): trpcRemixReturn<TRouter> {
+	const proxy = createTRPCReact<TRouter>({});
+
+	const _withTRPC = withTRPC<TRouter>(opts);
+
+	return {
+		proxy,
+		_withTRPC,
+	};
+}
+
+type trpcRemixReturn<TRouter extends AnyRouter> = {
+	proxy: CreateTRPCReact<TRouter, unknown, null>;
+	_withTRPC: (Component: FC<{}>) => ReactElement<any, string | JSXElementConstructor<any>>;
+};
 ```
