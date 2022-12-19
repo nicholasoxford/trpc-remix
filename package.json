@@ -1,8 +1,8 @@
 {
 	"name": "@noxford1/trpc-remix",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "tRPC Remix lib",
-	"author": "ggrandi",
+	"author": "noxford1",
 	"license": "MIT",
 	"scripts": {
 		"build": "rm -rf dist/ && pnpm tsc && pnpm node ./esbuild.mjs",
