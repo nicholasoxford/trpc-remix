@@ -14,11 +14,11 @@ export function createTRPCRemix<TRouter extends AnyRouter>(
 
 	return {
 		proxy,
-		_withTRPC,
+		withTRPC: _withTRPC,
 	};
 }
 
 type trpcRemixReturn<TRouter extends AnyRouter> = {
 	proxy: CreateTRPCReact<TRouter, unknown, null>;
-	_withTRPC: (Component: FC<{}>) => ReactElement<any, string | JSXElementConstructor<any>>;
+	withTRPC: (Component: FC<{}>) => ReactElement<any, string | JSXElementConstructor<any>>;
 };
